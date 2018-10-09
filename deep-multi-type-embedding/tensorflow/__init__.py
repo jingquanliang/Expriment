@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'Bryan Perozzi'
-__email__ = 'bperozzi@cs.stonybrook.edu'
+__author__ = 'QuanLiang Jing'
+__email__ = 'jingquanliang@ict.ac.cn'
 __version__ = '1.0.0'

@@ -72,6 +72,14 @@ class GANModel:
         self.summary_writer = tf.summary.FileWriter('snapshots/', graph=tf.get_default_graph()) #日志记录器
 
 
+#画图
+        self.plotPreOperate()
+
+
+    def plotPreOperate(self):
+        self.fig = plt.figure(figsize=(4, 4)) #初始化一个figsize大小的图片
+        self.gs = gridspec.GridSpec(4, 4) #调整子图的位置
+        self.gs.update(wspace=0.05, hspace=0.05) #置子图间的间距
 
     def save(self,saver, sess, logdir, step): #保存模型的save函数
        model_name = 'model' #模型名前缀
@@ -106,19 +114,22 @@ class GANModel:
 
 
     def plot(self,samples): #保存图片时使用的plot函数
-        fig = plt.figure(figsize=(4, 4)) #初始化一个figsize大小的图片
-        gs = gridspec.GridSpec(4, 4) #调整子图的位置
-        gs.update(wspace=0.05, hspace=0.05) #置子图间的间距
+
+
+
+        # fig = plt.figure(figsize=(4, 4)) #初始化一个figsize大小的图片
+        # gs = gridspec.GridSpec(4, 4) #调整子图的位置
+        # gs.update(wspace=0.05, hspace=0.05) #置子图间的间距
 
         for i, sample in enumerate(samples): #依次将16张子图填充进需要保存的图像
-            ax = plt.subplot(gs[i])
+            ax = plt.subplot(self.gs[i])
             plt.axis('off')
             ax.set_xticklabels([])
             ax.set_yticklabels([])
             ax.set_aspect('equal')
             plt.imshow(sample.reshape(28, 28), cmap='Greys_r')
 
-        return fig
+        # return fig
 
     def train(self): #进行训练  #X表示真的样本(即真实的手写数字),Z表示随机噪声作为生成器G的输入
 
@@ -141,14 +152,18 @@ class GANModel:
 
         i = 0 #训练过程中保存的可视化结果的索引
 
+        plt.ion()   # continuously plot,add by jingquanliang
+
         for it in range(1000000): #训练100万次
             if it % 1000 == 0: #每训练1000次就保存一下结果
                 samples = self.sess.run(self.G_sample, feed_dict={self.Z: self.sample_Z(16, Z_dim)})
 
-                fig = self.plot(samples) #通过plot函数生成可视化结果
+                figtemp = self.plot(samples) #通过plot函数生成可视化结果
                 plt.savefig('out/{}.png'.format(str(i).zfill(3)), bbox_inches='tight') #保存可视化结果
                 i += 1
-                plt.close(fig)
+
+                plt.draw(); plt.pause(0.01)
+                # plt.close(fig)
 
             X_mb, _ = mnist.train.next_batch(mb_size) #得到训练一个batch所需的真实手写数字(作为判别器的输入)
 
@@ -173,4 +188,5 @@ class GANModel:
                 print('G_loss: {:.4}'.format(G_loss_curr))
                 print()
 
+            plt.ioff()
 
