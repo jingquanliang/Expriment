@@ -14,7 +14,7 @@ import sys
 import argparse
 
 from GANModel import GANModel
-
+from AutoEncoderModel import AutoEncoderModel
 
 def main():
     parser = argparse.ArgumentParser()
@@ -61,14 +61,19 @@ def train(args):
     print('=====================================')
 
     gan=GANModel(args)
-    gan.train()
+    # gan.train()
+
+    ae=AutoEncoderModel(args)
+    ae.train()
+
+
+
+
+
+#=======================在外面执行时候的代码，代码没有调试，有bug================================
+
 
     # with tf.Session() as sess:
-
-
-
-
-
 
     #     mb_size = 128 #训练的batch_size
 
