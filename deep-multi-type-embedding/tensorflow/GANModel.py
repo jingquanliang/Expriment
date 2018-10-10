@@ -190,3 +190,8 @@ class GANModel:
 
             plt.ioff()
 
+if __name__ == "__main__":
+
+    args={}
+    gan=GANModel(args)
+    gan.train()

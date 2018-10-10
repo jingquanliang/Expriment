@@ -22,8 +22,9 @@ class ModelMTIE:
         Computation graph of MTIE model
         """
         '''Constant for item type weights (non-zero real values)'''
-        '''item类型的数量，从文本文件中，我们可以看到，类型就是0，1,2,3四个'''
+        '''item类型的权重，从文本文件中，我们可以看到，类型就是0，1,2,3四个'''
         self.item_type_weights = tf.constant([1, 1, 1, 1], name='item_type_weights', dtype=tf.float32)
+        '''item类型的数量'''
         self.number_of_item_types = tf.cast(tf.count_nonzero(self.item_type_weights), tf.int32)
 
         '''Variable for context item embeddings'''
@@ -38,15 +39,17 @@ class ModelMTIE:
                                                            shape=[args.batch_size, (args.negative + 1), None],
                                                            dtype=tf.int32)
 
+        '''item类型索引'''
         self.batch_behaviors_item_type_indices = tf.placeholder(name='batch_behaviors_item_type_indices',
                                                                 shape=[args.batch_size, (args.negative + 1), None],
                                                                 dtype=tf.int32)
-
+        '''行为的标签'''
         self.batch_behaviors_labels = tf.placeholder(name='batch_behaviors_labels',
                                                      shape=[args.batch_size, (args.negative + 1)],
                                                      dtype=tf.float32)
 
         '''Inflate each item index and item type index into an one_hot vector for each behavior'''
+        '''把item和item type转变为index的形式'''
         self.batch_behaviors_item_one_hots = tf.one_hot(name='batch_behaviors_item_one_hots',
                                                         indices=self.batch_behaviors_item_indices,
                                                         depth=args.number_of_items)
@@ -55,16 +58,17 @@ class ModelMTIE:
                                                              indices=self.batch_behaviors_item_type_indices,
                                                              depth=self.number_of_item_types)
 
-        '''Assemble itemset embeddings representation for each behavior，矩阵的运算'''
+        '''Assemble itemset embeddings representation for each behavior，矩阵的运算，把每一个item根据embeddings矩阵转变'''
         self.batch_behaviors_item_embeddings = tf.einsum('ijth,hd->ijtd',
                                                          self.batch_behaviors_item_one_hots,
                                                          self.target_item_embeddings)
-        '''Match item weights for each behavior，外积，对应元素相乘即可'''
+
+        '''Match item weights for each behavior，外积，对应元素相乘即可，其实，就是把type和type的weight相乘'''
         self.batch_behaviors_item_weights = tf.einsum('ijth,h->ijt',
                                                       self.batch_behaviors_item_type_one_hots,
                                                       self.item_type_weights)
 
-        '''Weight behavior itemset embeddings representation'''
+        '''Weight behavior itemset embeddings representation，这个就是behavior真正的表示'''
         self.batch_behaviors_weighted_representations = tf.einsum('ijtd,ijt->ijtd',
                                                                   self.batch_behaviors_item_embeddings,
                                                                   self.batch_behaviors_item_weights)
@@ -240,3 +244,9 @@ if __name__ == '__main__':
     np.random.seed(seed)
 
     train_mtie(parse_args())
+
+## Usage
+'''
+python model_mtie.py --itemlist data/itemlist.txt --behaviorlist data/behaviorlist.txt --output embeddings.mode1 --mode 1 --threads 8
+
+'''

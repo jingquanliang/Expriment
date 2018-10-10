@@ -232,7 +232,7 @@ class BehaviorDatasetManager:
 
 
             '''For each type, sample the same number of random items'''
-            print(random_neg_behavior_type_item_numbers)
+            # print(random_neg_behavior_type_item_numbers)
             countFlag=0;
             for itype_idx, neg_behavior_type_item_numbers in enumerate(random_neg_behavior_type_item_numbers):
                 neg_behavior_type_item_indices = [self.itypeidx2typeitemindicessampler_dict[itype_idx].sample()
@@ -240,9 +240,9 @@ class BehaviorDatasetManager:
                 countFlag=countFlag+neg_behavior_type_item_numbers;
                 # Make sure to use extend instead of append
                 sampled_neg_behavior_item_indices.extend(neg_behavior_type_item_indices)
-                print("neg_behavior_type_item_numbers"+str(neg_behavior_type_item_numbers))
-            print("#########################pos_behavior_item_num:"+str(pos_behavior_item_num))
-            print("#########################countFlag:"+str(countFlag))
+                # print("neg_behavior_type_item_numbers"+str(neg_behavior_type_item_numbers))
+            # print("#########################pos_behavior_item_num:"+str(pos_behavior_item_num))
+            # print("#########################countFlag:"+str(countFlag))
             # exit()
         elif mode == '2':
             '''
