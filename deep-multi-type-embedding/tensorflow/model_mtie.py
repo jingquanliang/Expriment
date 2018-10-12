@@ -195,7 +195,32 @@ def train_mtie(args):
                          model_mtie.learning_rate: curr_learning_rate}
 
             t_s = time.time()
-            sess.run(model_mtie.train_op, feed_dict=feed_dict)
+
+            # sess.run(model_mtie.train_op, feed_dict=feed_dict)
+
+            _, l1_loss_ , l1_lables, l1_encoded_, l1_product, l1_rates, l1_norms= sess.run([model_mtie.train_op, model_mtie.loss,model_mtie.batch_behaviors_labels,model_mtie.batch_behaviors_weighted_representations,model_mtie.batch_behaviors_matrix_inner_product,model_mtie.batch_behaviors_success_rates,model_mtie.batch_behaviors_norms], feed_dict=feed_dict)
+
+            print("--l1_encoded_-shape--"*3)
+            print(l1_encoded_.shape) #(1,6,27,2)
+            print("--l1_encoded_---"*3)
+            print(l1_encoded_)
+
+            print("--l1_lables-shape--"*3)
+            print(l1_lables.shape) #(1,6)
+
+            print("--l1_product-shape--"*3)
+            print(l1_product.shape) #(1,6,27,27)
+
+            print("--l1_product---"*3)
+            print(l1_product)
+
+            print("--l1_norms-shape--"*3)
+            print(l1_norms.shape) #(1,6)
+
+            print("--l1_norms---"*3)
+            print(l1_norms)
+
+            exit()
             t_e = time.time()
             training_cum_time += (t_e - t_s)
 

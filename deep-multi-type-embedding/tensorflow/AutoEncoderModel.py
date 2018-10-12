@@ -50,15 +50,15 @@ class AutoEncoderModel:
 
         # encoder
         #batch_behaviors_weighted_representations在dataInitalization函数中
-        self.en0 = tf.layers.dense(self.batch_behaviors_weighted_representations, 128, tf.nn.tanh)
-        self.en1 = tf.layers.dense(self.en0, 64, tf.nn.tanh)
-        self.en2 = tf.layers.dense(self.en1, 40, tf.nn.tanh)
+        self.en0 = tf.layers.dense(self.batch_behaviors_weighted_representations, 128, tf.nn.sigmoid)
+        self.en1 = tf.layers.dense(self.en0, 64, tf.nn.sigmoid)
+        self.en2 = tf.layers.dense(self.en1, 40, tf.nn.sigmoid)
         self.encoded = tf.layers.dense(self.en2, args.encoderSize,tf.nn.sigmoid)
 
         # decoder
-        self.de0 = tf.layers.dense(self.encoded, 40, tf.nn.tanh)
-        self.de1 = tf.layers.dense(self.de0, 64, tf.nn.tanh)
-        self.de2 = tf.layers.dense(self.de1, 128, tf.nn.tanh)
+        self.de0 = tf.layers.dense(self.encoded, 40, tf.nn.sigmoid)
+        self.de1 = tf.layers.dense(self.de0, 64, tf.nn.sigmoid)
+        self.de2 = tf.layers.dense(self.de1, 128, tf.nn.sigmoid)
         self.decoded = tf.layers.dense(self.de2, args.size, tf.nn.sigmoid)
 
         self.loss = tf.losses.mean_squared_error(labels=self.batch_behaviors_weighted_representations, predictions=self.decoded)
@@ -157,7 +157,7 @@ class AutoEncoderModel:
                                                                   self.encoded,
                                                                   transpose_a=False,
                                                                   transpose_b=True)
-            self.reduce_sum_inner_product_matrix = tf.reduce_sum(self.batch_behaviors_matrix_inner_product)
+            self.reduce_sum_inner_product_matrix = tf.reduce_sum(self.batch_behaviors_matrix_inner_product, axis=(2, 3))
             self.batch_behaviors_norms = tf.sqrt(self.reduce_sum_inner_product_matrix)
 
             '''
@@ -186,25 +186,35 @@ class AutoEncoderModel:
             self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
             self.train_op = self.optimizer.minimize(self.l1_loss)
 
-            _, l1_loss_ , l1_encoded_, l1_product, l1_rates, norms= self.sess.run([self.train_op, self.l1_loss,self.encoded,self.batch_behaviors_matrix_inner_product,self.batch_behaviors_success_rates,self.batch_behaviors_norms], feed_dict=next_batch_element)
+            _, l1_loss_ , l1_lables, l1_encoded_, l1_product, l1_rates, l1_norms= self.sess.run([self.train_op, self.l1_loss,self.batch_behaviors_labels,self.encoded,self.batch_behaviors_matrix_inner_product,self.batch_behaviors_success_rates,self.batch_behaviors_norms], feed_dict=next_batch_element)
 
             # print("--l1_encoded_-shape--"*3)
-            # print(l1_encoded_.shape) #(1,6,14,30)
+            # print(l1_encoded_.shape) #(1,6,27,2)
             # print("--l1_encoded_---"*3)
             # print(l1_encoded_)
 
-            print("--l1_product-shape--"*3)
-            print(l1_product.shape) #(1,6,15,15)
-            print("--l1_product---"*3)
-            print(l1_product)
+            # print("--l1_lables-shape--"*3)
+            # print(l1_lables.shape) #(1,6)
 
-            exit()
+            # print("--l1_product-shape--"*3)
+            # print(l1_product.shape) #(1,6,27,27)
+
+            # print("--l1_product---"*3)
+            # print(l1_product)
+
+            # print("--l1_norms-shape--"*3)
+            # print(l1_norms.shape) #(1,6)
+
+            # print("--l1_norms---"*3)
+            # print(l1_norms)
+
+            # exit()
 
             # print("--norm---"*3)
             # print(norms)
             # print("--l1_rates---"*3)
             # print(l1_rates)
-            # print(' L1 train loss: {:.4f};\tautoEncoder train loss: {:.4f}\n'.format(l1_loss_,autoEncoderLoss_), flush=True)
+            print(' L1 train loss: {:.4f};\tautoEncoder train loss: {:.4f}\n'.format(l1_loss_,autoEncoderLoss_), flush=True)
 
     #========================先前的代码==============================
 
