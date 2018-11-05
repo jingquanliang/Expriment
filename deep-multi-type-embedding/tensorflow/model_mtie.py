@@ -81,6 +81,9 @@ class ModelMTIE:
         self.reduce_sum_inner_product_matrix = tf.reduce_sum(self.batch_behaviors_matrix_inner_product, axis=(2, 3))
         self.batch_behaviors_norms = tf.sqrt(self.reduce_sum_inner_product_matrix)
 
+
+
+
         '''
         Objective function 1:
         When both positive and negative behaviors are observed.
@@ -106,6 +109,9 @@ class ModelMTIE:
         '''Optimizer and training operation'''
         self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
         self.train_op = self.optimizer.minimize(self.loss)
+
+        self.l1_loss_summ = tf.summary.scalar("modle-mite-loss", self.loss) #记录判别器判别真实样本的误差
+        self.merge_op = tf.summary.merge_all()                       # operation to merge all summary
 
 
 def parse_args():
@@ -176,6 +182,12 @@ def train_mtie(args):
         # Report progress every 0.1% checkpoint
         checkpoint = samples_number // 1000
 
+
+
+        summary_writer = tf.summary.FileWriter('snapshots/', sess.graph) #日志记录器
+
+
+
         for sample_index in range(samples_number):
             '''Sample mini-batch of behaviors'''
             t_s = time.time()
@@ -198,29 +210,31 @@ def train_mtie(args):
 
             # sess.run(model_mtie.train_op, feed_dict=feed_dict)
 
-            _, l1_loss_ , l1_lables, l1_encoded_, l1_product, l1_rates, l1_norms= sess.run([model_mtie.train_op, model_mtie.loss,model_mtie.batch_behaviors_labels,model_mtie.batch_behaviors_weighted_representations,model_mtie.batch_behaviors_matrix_inner_product,model_mtie.batch_behaviors_success_rates,model_mtie.batch_behaviors_norms], feed_dict=feed_dict)
+            _, l1_loss_, merge_op , l1_lables, l1_encoded_, l1_product, l1_rates, l1_norms= sess.run([model_mtie.train_op, model_mtie.loss,model_mtie.merge_op,model_mtie.batch_behaviors_labels,model_mtie.batch_behaviors_weighted_representations,model_mtie.batch_behaviors_matrix_inner_product,model_mtie.batch_behaviors_success_rates,model_mtie.batch_behaviors_norms], feed_dict=feed_dict)
 
-            print("--l1_encoded_-shape--"*3)
-            print(l1_encoded_.shape) #(1,6,27,2)
-            print("--l1_encoded_---"*3)
-            print(l1_encoded_)
 
-            print("--l1_lables-shape--"*3)
-            print(l1_lables.shape) #(1,6)
+            summary_writer.add_summary(merge_op, sample_index)
+            # print("--l1_encoded_-shape--"*3)
+            # print(l1_encoded_.shape) #(1,6,27,2)
+            # print("--l1_encoded_---"*3)
+            # print(l1_encoded_)
 
-            print("--l1_product-shape--"*3)
-            print(l1_product.shape) #(1,6,27,27)
+            # print("--l1_lables-shape--"*3)
+            # print(l1_lables.shape) #(1,6)
 
-            print("--l1_product---"*3)
-            print(l1_product)
+            # print("--l1_product-shape--"*3)
+            # print(l1_product.shape) #(1,6,27,27)
 
-            print("--l1_norms-shape--"*3)
-            print(l1_norms.shape) #(1,6)
+            # print("--l1_product---"*3)
+            # print(l1_product)
 
-            print("--l1_norms---"*3)
-            print(l1_norms)
+            # print("--l1_norms-shape--"*3)
+            # print(l1_norms.shape) #(1,6)
 
-            exit()
+            # print("--l1_norms---"*3)
+            # print(l1_norms)
+
+            # exit()
             t_e = time.time()
             training_cum_time += (t_e - t_s)
 
@@ -229,8 +243,8 @@ def train_mtie(args):
                 avg_loop_time = (sampling_cum_time + training_cum_time) / (sample_index + 1)
                 etc = (samples_number - sample_index) * avg_loop_time
                 progress = sample_index / samples_number
-                print(' Current rho: {:9.5f};\tProgress: {:7.1%};\tETC: {:5.1f} min'.
-                      format(curr_learning_rate, progress, (etc / 60)), end='\r', flush=True)
+                print('loss:{:.4f};\tCurrent rho: {:9.5f};\tProgress: {:7.1%};\tETC: {:5.1f} min'.
+                      format(l1_loss_, curr_learning_rate, progress, (etc / 60)), end='\r\n', flush=True)
 
             '''Update learning rate'''
             if curr_learning_rate < args.rho * 0.0001:

@@ -32,7 +32,7 @@ def GetBehaviorStr(behavior,paperid,authorid2authorname,confid2confname,paperid2
     return ret[1:]
 
 def LearnSuc():
-    
+
     typenames = ['author','conf','keyword','ref']
 
     n_iter = 50
@@ -70,9 +70,9 @@ def LearnSuc():
     behaviors = []
     fr = open('small/PaperItemsets.txt','rb')
     for line in fr:
-        arr = line.strip('\r\n').split('\t')        
+        arr = line.strip('\r\n').split('\t')
         behavior = []
-        paperid = arr[0]        
+        paperid = arr[0]
         for i in range(n_type):
             if arr[i+1] == '':
                 behavior.append([])
@@ -105,9 +105,9 @@ def LearnSuc():
     s = 'iter\tmean_r_pos\tmean_r_neg\tmean_r_diff\tmean_norm_pos\tmean_norm_neg\tmean_norm_diff' \
             +'\tmax_r_pos\tmax_r_neg\tmax_norm_pos\tmax_norm_neg\tmin_r_pos\tmin_r_neg\tmin_norm_pos\tmin_norm_neg'
     fw_evaluate.write(s+'\n')
-    print s
+    print(s)
 
-    # main 
+    # main
     for _iter in range(n_iter):
 
         # evaluate
@@ -128,7 +128,7 @@ def LearnSuc():
                 for item in behavior[i]:
                     vec_b += w_type[i]*list_item2vec[i][item]
             norm_b = np.linalg.norm(vec_b,2)
-            norm_b_neg.append(norm_b)            
+            norm_b_neg.append(norm_b)
             r_b = EasyTanh(norm_b/2)
             r_b_neg.append(r_b)
         mean_norm_b_pos = np.mean(norm_b_pos)
@@ -148,7 +148,7 @@ def LearnSuc():
                 +'\t'+str(max_r_b_pos)+'\t'+str(max_r_b_neg)+'\t'+str(max_norm_b_pos)+'\t'+str(max_norm_b_neg) \
                 +'\t'+str(min_r_b_pos)+'\t'+str(min_r_b_neg)+'\t'+str(min_norm_b_pos)+'\t'+str(min_norm_b_neg)
         fw_evaluate.write(s+'\n')
-        print s
+        print(s)
 
         # output item2vec
         fw_item2vec = open('item2vec/item2vec_'+str(_iter)+'.txt','w')

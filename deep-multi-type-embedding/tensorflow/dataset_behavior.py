@@ -150,6 +150,65 @@ class BehaviorDatasetManager:
         if len(unknown_item_set):
             print('Warning: {} unknown items ignored!'.format(len(unknown_item_set)))
 
+
+    def get_nextBatch_evaluateBehaviors(self,index,batch_size=1,negative=0,mode='1'):
+        """
+        Sample a batch of behaviors for evaluation
+        :param batch_size: number of positive samplings\
+        :index: the index of the evaluating postivie sample
+        :param negative: number of negative behaviors sampled FOR EACH positive behavior
+        :param mode: 1 for size-constrained; 2 for type-distribution constrained
+        :return:
+        """
+        batch_behaviors_item_indices = []
+        batch_behaviors_item_type_indices = []
+        batch_behaviors_labels = []
+
+        pos_label = 1
+        neg_label = 0
+
+        pos_behavior_key_indices = []
+        pos_behavior_key_indices.append(index) #构建一个list，以便复用以下的代码
+
+        '''For each positive sampling'''
+        for pos_behavior_key_ind in pos_behavior_key_indices:
+            behaviors_item_indices = []
+            behaviors_item_type_indices = []
+            behaviors_labels = []
+
+            '''Sample a positive behavior'''
+            pos_behavior = list(self.behavior2behavioritemindiceslst_dict.keys())[pos_behavior_key_ind]
+            pos_behavior_item_indices = self.behavior2behavioritemindiceslst_dict[pos_behavior]
+            behaviors_item_indices.append(pos_behavior_item_indices) #behaior对应的items 的索引
+
+            pos_behavior_item_type_indices = []
+            for pos_behavior_item_idx in pos_behavior_item_indices:
+                itype_idx = self.itemidx2itypeidx_dict[pos_behavior_item_idx]
+                pos_behavior_item_type_indices.append(itype_idx)
+            behaviors_item_type_indices.append(pos_behavior_item_type_indices)
+
+            behaviors_labels.append(pos_label)
+
+            '''Sample multiple negative behaviors'''
+            for _ in range(negative):
+                neg_behavior_item_indices, neg_behavior_item_type_indices = \
+                    self.sample_negative_behavior_based_on_positive_behavior(pos_behavior_item_indices, mode=mode)
+
+                behaviors_item_indices.append(neg_behavior_item_indices)
+                behaviors_item_type_indices.append(neg_behavior_item_type_indices)
+                behaviors_labels.append(neg_label)
+
+            batch_behaviors_item_indices.append(behaviors_item_indices)
+            batch_behaviors_item_type_indices.append(behaviors_item_type_indices)
+            batch_behaviors_labels.append(behaviors_labels)
+
+        '''Necessary to unify all lists to same length'''
+        batch_behaviors_item_indices = self.unify_input_dimensions(batch_behaviors_item_indices)
+        batch_behaviors_item_type_indices = self.unify_input_dimensions(batch_behaviors_item_type_indices)
+
+        return batch_behaviors_item_indices, batch_behaviors_item_type_indices, batch_behaviors_labels
+
+
     def sample_batch_behaviors(self, batch_size=1, negative=5, mode='1'):
         """
         Sample a batch of behaviors
@@ -176,7 +235,7 @@ class BehaviorDatasetManager:
             '''Sample a positive behavior'''
             pos_behavior = list(self.behavior2behavioritemindiceslst_dict.keys())[pos_behavior_key_ind]
             pos_behavior_item_indices = self.behavior2behavioritemindiceslst_dict[pos_behavior]
-            behaviors_item_indices.append(pos_behavior_item_indices)
+            behaviors_item_indices.append(pos_behavior_item_indices) #behaior对应的items 的索引
 
             pos_behavior_item_type_indices = []
             for pos_behavior_item_idx in pos_behavior_item_indices:
